@@ -32,6 +32,9 @@ class Main {
         }
         this.drawInput();
         $('#output td').text('').removeClass('success');
+
+        $('#output th').find('span').text('');
+        $('p.output_info span').text('');
     }
     onMouseDown(e) {
         this.canvas.style.cursor = 'default';
