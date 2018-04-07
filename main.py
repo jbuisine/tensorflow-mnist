@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from flask import Flask, jsonify, render_template, request
+import time
 
 from mnist import model
 
@@ -38,11 +39,21 @@ app = Flask(__name__)
 
 @app.route('/api/mnist', methods=['POST'])
 def mnist():
+
+    startReg = time.time()
     input1 = ((255 - np.array(request.json, dtype=np.uint8)) / 255.0).reshape(1, 784)
-    input2 = ((255 - np.array(request.json, dtype=np.uint8)) / 255.0).reshape(1, 28, 28, 1)
     output1 = regression(input1)
+    endReg = time.time()
+
+    startConv = time.time()
+    input2 = ((255 - np.array(request.json, dtype=np.uint8)) / 255.0).reshape(1, 28, 28, 1)
     output2 = convolutional(input2)
-    return jsonify(results=[output1, output2])
+    endConv = time.time()
+
+    diffRef = endReg - startReg
+    diffConv = endConv - startConv
+
+    return jsonify(results=[output1, output2], times=[diffRef, diffConv])
 
 
 @app.route('/')
