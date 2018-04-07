@@ -11,17 +11,17 @@ mnist = mnist_data.read_data_sets("data", one_hot=True, reshape=False, validatio
 print("Tensorflow version " + tf.__version__)
 
 # model
+with tf.variable_scope("convolutional"):
+    # input X: 28x28 grayscale images, the first dimension (None) will index the images in the mini-batch
+    X = tf.placeholder(tf.float32, [None, 28, 28, 1])
+    # Probability of keeping a node during dropout = 1.0 at test time (no dropout) and 0.75 at training time
+    pkeep = tf.placeholder(tf.float32)
+    # variable learning rate
+    lr = tf.placeholder(tf.float32)
+    Y, Ylogits, variables = model.convolutional(X, pkeep)
 
-# input X: 28x28 grayscale images, the first dimension (None) will index the images in the mini-batch
-X = tf.placeholder(tf.float32, [None, 28, 28, 1])
 # correct answers will go here
 Y_ = tf.placeholder(tf.float32, [None, 10])
-# variable learning rate
-lr = tf.placeholder(tf.float32)
-
-# Probability of keeping a node during dropout = 1.0 at test time (no dropout) and 0.75 at training time
-pkeep = tf.placeholder(tf.float32)
-Y, Ylogits, variables = model.convolutional(X, pkeep)
 
 # train
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=Ylogits, labels=Y_)
@@ -35,11 +35,12 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 train_step = tf.train.AdamOptimizer(lr).minimize(cross_entropy)
 
 saver = tf.train.Saver(variables)
+
 with tf.Session() as sess:
 
     sess.run(tf.global_variables_initializer())
 
-    for i in range(1000):
+    for i in range(10000):
         batch_X, batch_Y = mnist.train.next_batch(100)
 
         # learning rate decay
@@ -61,7 +62,5 @@ with tf.Session() as sess:
     print("Test result")
     print(sess.run(accuracy, feed_dict={X: mnist.test.images, Y_: mnist.test.labels, pkeep: 1.0}))
 
-    path = saver.save(
-        sess, os.path.join(os.path.dirname(__file__), 'data', 'convolutional.ckpt'),
-        write_meta_graph=False, write_state=False)
+    path = saver.save(sess, os.path.join(os.path.dirname(__file__), 'data', 'convolutional.ckpt'), write_meta_graph=False, write_state=False)
     print("Saved:", path)
