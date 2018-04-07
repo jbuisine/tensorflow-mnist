@@ -5,29 +5,29 @@ from flask import Flask, jsonify, render_template, request
 from mnist import model
 
 
-x = tf.placeholder("float", [None, 784])
+X = tf.placeholder("float", [None, 784])
 sess = tf.Session()
 
 # restore trained data
 with tf.variable_scope("regression"):
-    y1, variables = model.regression(x)
+    Y1, variables = model.regression(X)
 saver = tf.train.Saver(variables)
 saver.restore(sess, "mnist/data/regression.ckpt")
 
 
 with tf.variable_scope("convolutional"):
-    keep_prob = tf.placeholder("float")
-    y2, variables = model.convolutional(x, keep_prob)
+    pkeep = tf.placeholder(tf.float32)
+    Y2, Ylogits, variables = model.convolutional(X, pkeep)
 saver = tf.train.Saver(variables)
 saver.restore(sess, "mnist/data/convolutional.ckpt")
 
 
 def regression(input):
-    return sess.run(y1, feed_dict={x: input}).flatten().tolist()
+    return sess.run(Y1, feed_dict={X: input}).flatten().tolist()
 
 
 def convolutional(input):
-    return sess.run(y2, feed_dict={x: input, keep_prob: 1.0}).flatten().tolist()
+    return sess.run(Y2, feed_dict={X: input, pkeep: 1.0}).flatten().tolist()
 
 
 # webapp
